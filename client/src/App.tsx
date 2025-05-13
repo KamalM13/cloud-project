@@ -1,5 +1,6 @@
 import { ErrorBoundary } from "@/error-boundary";
 import HomePage from "@/pages/home";
+import DockerPage from "@/pages/docker";
 import Layout from "@/pages/layout";
 import {
   createBrowserRouter,
@@ -33,6 +34,14 @@ const router = createBrowserRouter([
           {
             path: "/",
             element: <HomePage />,
+          },
+          {
+            path: "/docker",
+            element: <DockerPage />,
+          },
+          {
+            path: "/docker/*",
+            element: <DockerPage />,
           },
         ],
       },

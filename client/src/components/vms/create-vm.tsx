@@ -160,7 +160,7 @@ const CreateVmDialog = ({
                           </SelectItem>
                         ))}
                       {disks.filter((disk) => !disk.in_use).length === 0 && (
-                        <SelectItem value="" disabled>
+                        <SelectItem value="none" disabled>
                           No available disks
                         </SelectItem>
                       )}
@@ -175,7 +175,17 @@ const CreateVmDialog = ({
           </div>
           <DialogFooter>
             <Button
-              onClick={() => setIsCreateVMOpen(false)}
+              onClick={() => {
+                if (
+                  errors.name?.message ||
+                  errors.disk_id?.message ||
+                  errors.cpu?.message ||
+                  errors.memory?.message
+                ) {
+                  return;
+                }
+                setIsCreateVMOpen(false);
+              }}
               form="create-vm-form"
               type="submit"
             >

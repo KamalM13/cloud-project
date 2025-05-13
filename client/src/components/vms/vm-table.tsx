@@ -1,4 +1,3 @@
-import CreateDiskDialog from "@/components/disk/create-disk";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -97,9 +96,16 @@ const VmTable = () => {
       <CreateVmDialog open={isCreateVMOpen} onOpenChange={setIsCreateVMOpen} />
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <div>
-            <CardTitle className="text-xl font-bold">
+          <div className="w-full">
+            <CardTitle className="text-xl font-bold flex justify-between w-full">
               Virtual Machines
+              <Button
+                onClick={() => setIsCreateVMOpen(true)}
+                variant={"outline"}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Create VM
+              </Button>
             </CardTitle>
             <CardDescription>Manage your virtual machines</CardDescription>
           </div>

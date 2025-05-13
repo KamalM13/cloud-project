@@ -6,7 +6,9 @@ import os
 import sys
 
 # Configure logging with default values
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 # Add the current directory to path if needed
@@ -17,16 +19,17 @@ if current_dir not in sys.path:
 # Try to import config, but use defaults if not available
 try:
     from app.config import LOG_LEVEL, LOG_FORMAT
+
     logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
 except ImportError:
     logger.warning("Using default logging configuration. Config module not found.")
 
 # Import routers - with fallbacks
 try:
-    from app.routers import disk_router, vm_router
+    from app.routers import disk_router, vm_router, docker_router
 except ImportError:
     try:
-        from routers import disk_router, vm_router
+        from routers import disk_router, vm_router, docker_router
     except ImportError:
         logger.error("Could not import routers. Please check your project structure.")
         disk_router = None
@@ -40,7 +43,7 @@ app = FastAPI(
 )
 
 # Setup CORS with specific allowed origins
-allowed_origins = ["http://localhost:5173"]  
+allowed_origins = ["http://localhost:5173"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,  # Allows only specified origins
@@ -56,6 +59,7 @@ if disk_router and vm_router:
 else:
     logger.warning("Routers not loaded. API endpoints may not be available.")
 
+
 @app.get("/")
 def read_root():
     """
@@ -64,11 +68,9 @@ def read_root():
     return {
         "message": "Cloud Management System is running.",
         "version": "1.0.0",
-        "endpoints": {
-            "disks": "/api/disks",
-            "vms": "/api/vms"
-        }
+        "endpoints": {"disks": "/api/disks", "vms": "/api/vms"},
     }
+
 
 @app.get("/health")
 def health_check():
@@ -76,6 +78,7 @@ def health_check():
     Health check endpoint
     """
     return {"status": "healthy"}
+
 
 if __name__ == "__main__":
     # Run the application with uvicorn when script is executed directly

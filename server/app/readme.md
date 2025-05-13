@@ -34,5 +34,5 @@ qemu-system-x86_64 --version
 
 - **Alpine ISO**
   👉 [Download Alpine ISO](hhttps://dl-cdn.alpinelinux.org/alpine/v3.21/releases/x86_64/alpine-standard-3.21.3-x86_64.iso)
-  Place your ISO inside /app/isos/
+  Place your ISO inside /app/data/iso/
   This ISO will be used to boot new VMs for OS installation.

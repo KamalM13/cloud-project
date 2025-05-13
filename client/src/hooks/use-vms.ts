@@ -26,7 +26,12 @@ export default function useVms() {
 
   const createVmMutation = useMutation({
     mutationFn: async (newVm: CreateVm) => {
-      const response = await api.post("api/vms", newVm);
+      const response = await api.post("api/vms", {
+        name: newVm.name,
+        cpu_cores: newVm.cpu,
+        memory_size: newVm.memory,
+        disk_id: newVm.disk_id,
+      });
       return response.data;
     },
     onSuccess: () => {

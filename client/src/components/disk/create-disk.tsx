@@ -8,8 +8,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import useDisks from "@/hooks/use-disk";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
 interface DiskDialogProps {
   open: boolean;
@@ -19,7 +26,7 @@ interface DiskDialogProps {
 interface DiskFormValues {
   name: string;
   size: string;
-  format: string;
+  format: "qcow2" | "raw" | "vmdk" | "vhdx" | "vdi";
 }
 
 const CreateDiskDialog = ({ open, onOpenChange }: DiskDialogProps) => {
@@ -27,12 +34,13 @@ const CreateDiskDialog = ({ open, onOpenChange }: DiskDialogProps) => {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<DiskFormValues>({
     defaultValues: {
       name: "",
       size: "1",
-      format: "",
+      format: "qcow2",
     },
   });
   const onSubmit = handleSubmit((data) => {
@@ -64,21 +72,44 @@ const CreateDiskDialog = ({ open, onOpenChange }: DiskDialogProps) => {
             </div>
             <div className="space-y-2">
               <Input
-                type="text"
+                type="number"
                 placeholder="Disk Size (e.g., 20G)"
                 className="w-full"
-                {...register("size", { required: "Size is required" })}
+                min={1}
+                max={30}
+                {...register("size", {
+                  required: "Size is required",
+                  min: { value: 1, message: "Size must be at least 1" },
+                  max: { value: 30, message: "Size cannot exceed 30" },
+                })}
               />
               {errors.size && (
                 <span className="text-red-500">{errors.size.message}</span>
               )}
             </div>
             <div className="space-y-2">
-              <Input
-                type="text"
-                placeholder="Disk Format (e.g., qcow2)"
-                className="w-full"
-                {...register("format", { required: "Format is required" })}
+              <Controller
+                name="format"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={String(field.value)}
+                    onValueChange={(value) =>
+                      field.onChange(value as DiskFormValues["format"])
+                    }
+                  >
+                    <SelectTrigger id="format">
+                      <SelectValue placeholder="Select Format" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="qcow2">QCOW2</SelectItem>
+                      <SelectItem value="raw">RAW</SelectItem>
+                      <SelectItem value="vmdk">VMDK</SelectItem>
+                      <SelectItem value="vhdx">VHDX</SelectItem>
+                      <SelectItem value="vdi">VDI</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
               />
               {errors.format && (
                 <span className="text-red-500">{errors.format.message}</span>
@@ -89,7 +120,16 @@ const CreateDiskDialog = ({ open, onOpenChange }: DiskDialogProps) => {
             <Button
               type="submit"
               form="create-disk-form"
-              onClick={() => onOpenChange(false)}
+              onClick={() => {
+                if (
+                  errors.name?.message ||
+                  errors.size?.message ||
+                  errors.format?.message
+                ) {
+                  return;
+                }
+                onOpenChange(false);
+              }}
             >
               Create Disk
             </Button>

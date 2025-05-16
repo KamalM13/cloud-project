@@ -3,6 +3,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
 
+// Define error response type for better typing
+interface ErrorResponse {
+  message: string;
+}
+
 // Types
 interface Dockerfile {
   id: string;
@@ -78,12 +83,28 @@ export default function useDocker() {
       queryClient.invalidateQueries({ queryKey: ["dockerfiles"] });
       toast.success("Dockerfile created successfully");
     },
-    onError: (error: AxiosError) => {
+    onError: (error: AxiosError<ErrorResponse>) => {
       toast.error(
         `Failed to create Dockerfile: ${
           error.response?.data?.message || error.message
         }`
       );
+    },
+  });
+
+  const deleteDockerfileMutation = useMutation({
+    mutationFn: async (dockerfileId: string) => {
+      const response = await api.delete(
+        `/api/docker/dockerfiles/${dockerfileId}`
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dockerfiles"] });
+      toast.success("Dockerfile deleted successfully");
+    },
+    onError: (error: AxiosError<ErrorResponse>) => {
+      toast.error(`Failed to delete Dockerfile: ${error.message}`);
     },
   });
 
@@ -109,7 +130,7 @@ export default function useDocker() {
       queryClient.invalidateQueries({ queryKey: ["images"] });
       toast.success("Image built successfully");
     },
-    onError: (error: AxiosError) => {
+    onError: (error: AxiosError<ErrorResponse>) => {
       toast.error(
         `Failed to build image: ${
           error.response?.data?.message || error.message
@@ -136,7 +157,7 @@ export default function useDocker() {
       queryClient.invalidateQueries({ queryKey: ["images"] });
       toast.success("Image pulled successfully");
     },
-    onError: (error: AxiosError) => {
+    onError: (error: AxiosError<ErrorResponse>) => {
       toast.error(
         `Failed to pull image: ${
           error.response?.data?.message || error.message
@@ -160,7 +181,7 @@ export default function useDocker() {
     },
   });
 
-  const runContainerMutation = useMutation({
+  const createContainerMutation = useMutation({
     mutationFn: async (container: ContainerRun) => {
       const response = await api.post("/api/docker/containers/run", container);
       return response.data;
@@ -169,7 +190,27 @@ export default function useDocker() {
       queryClient.invalidateQueries({ queryKey: ["containers"] });
       toast.success("Container started successfully");
     },
-    onError: (error: AxiosError) => {
+    onError: (error: AxiosError<ErrorResponse>) => {
+      toast.error(
+        `Failed to start container: ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    },
+  });
+
+  const startContainerMutation = useMutation({
+    mutationFn: async (containerId: string) => {
+      const response = await api.post(
+        `/api/docker/containers/${containerId}/start`
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["containers"] });
+      toast.success("Container started successfully");
+    },
+    onError: (error: AxiosError<ErrorResponse>) => {
       toast.error(
         `Failed to start container: ${
           error.response?.data?.message || error.message
@@ -189,12 +230,28 @@ export default function useDocker() {
       queryClient.invalidateQueries({ queryKey: ["containers"] });
       toast.success("Container stopped successfully");
     },
-    onError: (error: AxiosError) => {
+    onError: (error: AxiosError<ErrorResponse>) => {
       toast.error(
         `Failed to stop container: ${
           error.response?.data?.message || error.message
         }`
       );
+    },
+  });
+
+  const deleteContainerMutation = useMutation({
+    mutationFn: async (containerId: string) => {
+      const response = await api.delete(
+        `/api/docker/containers/${containerId}`
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["containers"] });
+      toast.success("Container deleted successfully");
+    },
+    onError: (error: AxiosError<ErrorResponse>) => {
+      toast.error(`Failed to delete container: ${error.message}`);
     },
   });
 
@@ -223,7 +280,7 @@ export default function useDocker() {
       queryClient.invalidateQueries({ queryKey: ["dockerfiles"] });
       toast.success("Dockerfile created from template successfully");
     },
-    onError: (error: AxiosError) => {
+    onError: (error: AxiosError<ErrorResponse>) => {
       toast.error(
         `Failed to create Dockerfile from template: ${
           error.response?.data?.message || error.message
@@ -240,6 +297,36 @@ export default function useDocker() {
     },
   });
 
+  const deleteImageMutation = useMutation({
+    mutationFn: async (imageId: string) => {
+      const response = await api.delete(`/api/docker/images/${imageId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["images"] });
+      toast.success("Image deleted successfully");
+    },
+    onError: (error: AxiosError<ErrorResponse>) => {
+      toast.error(`Failed to delete image: ${error.message}`);
+    },
+  });
+
+  // Get Dockerfile content
+  const getDockerfileContent = async (
+    dockerfileId: string
+  ): Promise<string> => {
+    try {
+      const response = await api.get(
+        `/api/docker/dockerfiles/${dockerfileId}/content`
+      );
+      return response.data.content;
+    } catch (error) {
+      console.error("Failed to get Dockerfile content:", error);
+      toast.error("Failed to load Dockerfile content");
+      throw error;
+    }
+  };
+
   return {
     // Dockerfiles
     dockerfiles,
@@ -247,6 +334,8 @@ export default function useDocker() {
     isDockerfilesError,
     createDockerfile: createDockerfileMutation.mutate,
     createDockerfileFromTemplate: createDockerfileFromTemplateMutation.mutate,
+    deleteDockerfile: deleteDockerfileMutation.mutate,
+    getDockerfileContent,
 
     // Images
     images,
@@ -259,8 +348,10 @@ export default function useDocker() {
     containers,
     isContainersLoading,
     isContainersError,
-    runContainer: runContainerMutation.mutate,
+    createContainer: createContainerMutation.mutate,
+    startContainer: startContainerMutation.mutate,
     stopContainer: stopContainerMutation.mutate,
+    deleteContainer: deleteContainerMutation.mutate,
 
     // Templates
     templates,
@@ -269,5 +360,6 @@ export default function useDocker() {
 
     // Search
     searchImage: searchImageMutation.mutate,
+    deleteImage: deleteImageMutation.mutate,
   };
 }

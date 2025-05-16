@@ -10,20 +10,15 @@ import {
   SidebarMenuItem,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Computer, HardDrive, Image } from "lucide-react";
+import { Home, Image } from "lucide-react";
 import { Link } from "react-router";
 
 // Menu items.
 const items = [
   {
-    title: "Disks",
-    icon: HardDrive,
-    url: "/disks",
-  },
-  {
-    title: "Virtual Machines",
-    icon: Computer,
-    url: "/vms",
+    title: "Home",
+    icon: Home,
+    url: "/",
   },
   {
     title: "Docker",

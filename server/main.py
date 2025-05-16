@@ -68,7 +68,11 @@ def read_root():
     return {
         "message": "Cloud Management System is running.",
         "version": "1.0.0",
-        "endpoints": {"disks": "/api/disks", "vms": "/api/vms"},
+        "endpoints": {
+            "disks": "/api/disks",
+            "vms": "/api/vms",
+            "docker": "/api/docker",
+        },
     }
 
 

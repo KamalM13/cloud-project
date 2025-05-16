@@ -17,10 +17,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import useDocker from "@/hooks/use-docker";
+import { DirectorySelector } from "@/components/docker/directory-selector";
 
 interface TemplateDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+}
+
+// Define the template interface to fix the 'info' type error
+interface Template {
+  name: string;
+  description?: string;
 }
 
 const TemplateDialog = ({ open, onOpenChange }: TemplateDialogProps) => {
@@ -81,19 +88,29 @@ const TemplateDialog = ({ open, onOpenChange }: TemplateDialogProps) => {
               </SelectTrigger>
               <SelectContent>
                 {templates &&
-                  Object.entries(templates).map(([id, info]) => (
-                    <SelectItem key={id} value={id}>
-                      {info.name}
-                    </SelectItem>
-                  ))}
+                  Object.entries(templates as Record<string, Template>).map(
+                    ([id, info]) => (
+                      <SelectItem key={id} value={id}>
+                        {info.name}
+                      </SelectItem>
+                    )
+                  )}
               </SelectContent>
             </Select>
           </div>
           {templateId && templates?.[templateId]?.description && (
             <div className="text-sm text-gray-500">
-              {templates[templateId].description}
+              {(templates as Record<string, Template>)[templateId].description}
             </div>
           )}
+          <DirectorySelector
+            value={customizations.path || ""}
+            onChange={(value: string) =>
+              handleCustomizationChange("path", value)
+            }
+            label="Save Location"
+            placeholder="Select a directory to save the Dockerfile"
+          />
           <DialogFooter>
             <Button
               type="button"

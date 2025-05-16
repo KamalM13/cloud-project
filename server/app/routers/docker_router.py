@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Dict, Optional
+from datetime import datetime
 
 from app.models.docker import (
     Dockerfile,
@@ -80,6 +81,48 @@ def list_containers(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.delete("/dockerfiles/{dockerfile_id}", status_code=204)
+def delete_dockerfile(
+    dockerfile_id: str, service: DockerService = Depends(get_docker_service)
+):
+    """
+    Delete a Dockerfile.
+    """
+    try:
+        service.delete_dockerfile(dockerfile_id)
+        return None
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete("/containers/{container_id}", status_code=204)
+def delete_container(
+    container_id: str, service: DockerService = Depends(get_docker_service)
+):
+    """
+    Delete a Docker container.
+    """
+    try:
+        service.delete_container(container_id)
+        return None
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/containers/{container_id}/start", status_code=204)
+def start_container(
+    container_id: str, service: DockerService = Depends(get_docker_service)
+):
+    """
+    Start a Docker container.
+    """
+    try:
+        service.start_container(container_id)
+        return None
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.post("/containers/{container_id}/stop", status_code=204)
 def stop_container(
     container_id: str, service: DockerService = Depends(get_docker_service)
@@ -131,6 +174,18 @@ def pull_image(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.delete("/images/{image_id}", status_code=204)
+def delete_image(image_id: str, service: DockerService = Depends(get_docker_service)):
+    """
+    Delete a Docker image.
+    """
+    try:
+        service.delete_image(image_id)
+        return None
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @router.post("/containers/run", response_model=DockerContainer, status_code=201)
 def run_container(
     container: ContainerRun, service: DockerService = Depends(get_docker_service)
@@ -168,6 +223,46 @@ def create_dockerfile_from_template(
     try:
         return service.create_dockerfile_from_template(
             dockerfile.name, dockerfile.template_id, dockerfile.customizations
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/dockerfiles/{dockerfile_id}/content")
+def get_dockerfile_content(
+    dockerfile_id: str, service: DockerService = Depends(get_docker_service)
+):
+    """
+    Get the content of a specific Dockerfile.
+    """
+    try:
+        return {"content": service.get_dockerfile_content(dockerfile_id)}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/dockerfiles/{dockerfile_id}", response_model=Dockerfile)
+def get_dockerfile(
+    dockerfile_id: str, service: DockerService = Depends(get_docker_service)
+):
+    """
+    Get details of a specific Dockerfile.
+    """
+    try:
+        metadata = service._load_metadata()
+        dockerfile_info = metadata.get("dockerfiles", {}).get(dockerfile_id)
+
+        if not dockerfile_info:
+            raise HTTPException(
+                status_code=404, detail=f"Dockerfile with ID {dockerfile_id} not found"
+            )
+
+        return Dockerfile(
+            id=dockerfile_id,
+            name=dockerfile_info["name"],
+            path=dockerfile_info["path"],
+            created_at=datetime.fromisoformat(dockerfile_info["created_at"]),
+            updated_at=datetime.fromisoformat(dockerfile_info["updated_at"]),
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

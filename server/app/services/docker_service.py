@@ -118,45 +118,59 @@ class DockerService:
         dockerfile_info = metadata["dockerfiles"][dockerfile_id]
         dockerfile_path = dockerfile_info["path"]
 
-        # Build the Docker image
-        command = [
-            "docker",
-            "build",
-            "-t",
-            tag,
-            "-f",
-            dockerfile_path,
-            os.path.dirname(dockerfile_path),
-        ]
-        stdout, stderr, return_code = run_command(command)
-
-        if return_code != 0:
-            raise RuntimeError(f"Failed to build Docker image: {stderr}")
-
-        # Get image details
-        image_id = stdout.strip().split()[-1]
-
-        # Create and save metadata
-        image_info = {
-            "id": image_id,
-            "tag": tag,
-            "dockerfile_id": dockerfile_id,
-            "created_at": datetime.now().isoformat(),
-            "updated_at": datetime.now().isoformat(),
-        }
-
-        if "images" not in metadata:
-            metadata["images"] = {}
-        metadata["images"][image_id] = image_info
-        self._save_metadata(metadata)
-
-        return DockerImage(
-            id=image_id,
-            tag=tag,
-            dockerfile_id=dockerfile_id,
-            created_at=datetime.fromisoformat(image_info["created_at"]),
-            updated_at=datetime.fromisoformat(image_info["updated_at"]),
+        # Create a temporary build context directory
+        build_context_dir = os.path.join(
+            os.path.dirname(dockerfile_path), f"build_context_{dockerfile_id}"
         )
+        os.makedirs(build_context_dir, exist_ok=True)
+
+        try:
+            # Copy Dockerfile to build context with standard name
+            with open(dockerfile_path, "r") as src, open(
+                os.path.join(build_context_dir, "Dockerfile"), "w"
+            ) as dst:
+                dst.write(src.read())
+
+            # Build the Docker image from the build context
+            command = ["docker", "build", "-t", tag, build_context_dir]
+
+            stdout, stderr, return_code = run_command(command)
+
+            if return_code != 0:
+                raise RuntimeError(f"Failed to build Docker image: {stderr}")
+
+            # Get image ID from docker images
+            image_id_command = ["docker", "images", "-q", tag]
+            image_id, _, _ = run_command(image_id_command)
+            image_id = image_id.strip()
+
+            # Create and save metadata
+            image_info = {
+                "id": image_id,
+                "tag": tag,
+                "dockerfile_id": dockerfile_id,
+                "created_at": datetime.now().isoformat(),
+                "updated_at": datetime.now().isoformat(),
+            }
+
+            if "images" not in metadata:
+                metadata["images"] = {}
+            metadata["images"][image_id] = image_info
+            self._save_metadata(metadata)
+
+            return DockerImage(
+                id=image_id,
+                tag=tag,
+                dockerfile_id=dockerfile_id,
+                created_at=datetime.fromisoformat(image_info["created_at"]),
+                updated_at=datetime.fromisoformat(image_info["updated_at"]),
+            )
+
+        finally:
+            # Clean up build context directory
+            import shutil
+
+            shutil.rmtree(build_context_dir, ignore_errors=True)
 
     def list_images(self) -> List[DockerImage]:
         """
@@ -230,19 +244,115 @@ class DockerService:
         Returns:
             List of Dockerfile objects
         """
+        metadata = self._load_metadata()
         dockerfiles = []
-        for file in os.listdir(self.dockerfiles_dir):
-            if file.endswith(".dockerfile"):
+
+        if "dockerfiles" in metadata:
+            for dockerfile_id, info in metadata["dockerfiles"].items():
                 dockerfiles.append(
                     Dockerfile(
-                        id=file.split(".")[0],
-                        name=file.split(".")[0],
-                        path=os.path.join(self.dockerfiles_dir, file),
-                        created_at=datetime.now(),
-                        updated_at=datetime.now(),
+                        id=dockerfile_id,
+                        name=info["name"],
+                        path=info["path"],
+                        created_at=datetime.fromisoformat(info["created_at"]),
+                        updated_at=datetime.fromisoformat(info["updated_at"]),
                     )
                 )
+
         return dockerfiles
+
+    def delete_container(self, container_id: str) -> bool:
+        """
+        Delete a Docker container
+
+        Args:
+            container_id: ID of the container to delete
+
+        Returns:
+            Boolean indicating success
+        """
+        # First try to stop the container if it's running
+        try:
+            command = ["docker", "stop", container_id]
+            run_command(command)
+        except:
+            pass  # Ignore errors from stop command
+
+        # Then remove the container
+        command = ["docker", "rm", "-f", container_id]
+        _, stderr, return_code = run_command(command)
+
+        if return_code != 0:
+            raise RuntimeError(f"Failed to delete container: {stderr}")
+
+        # Try to clean up metadata if it exists
+        try:
+            metadata = self._load_metadata()
+            if "containers" in metadata and container_id in metadata["containers"]:
+                del metadata["containers"][container_id]
+                self._save_metadata(metadata)
+        except Exception:
+            pass  # Ignore metadata errors - container deletion was successful
+
+        return True
+
+    def delete_dockerfile(self, dockerfile_id: str) -> bool:
+        """
+        Delete a Dockerfile
+
+        Args:
+            dockerfile_id: ID of the Dockerfile to delete
+
+        Returns:
+            Boolean indicating success
+        """
+        metadata = self._load_metadata()
+
+        if (
+            "dockerfiles" not in metadata
+            or dockerfile_id not in metadata["dockerfiles"]
+        ):
+            raise ValueError(f"Dockerfile with ID {dockerfile_id} not found")
+
+        # Get the actual file path from metadata
+        dockerfile_info = metadata["dockerfiles"][dockerfile_id]
+        dockerfile_path = dockerfile_info["path"]
+
+        try:
+            # Delete the file
+            os.remove(dockerfile_path)
+
+            # Remove the entry from metadata
+            del metadata["dockerfiles"][dockerfile_id]
+            self._save_metadata(metadata)
+
+            return True
+        except FileNotFoundError:
+            # If file is already gone, just clean up metadata
+            del metadata["dockerfiles"][dockerfile_id]
+            self._save_metadata(metadata)
+            return True
+        except Exception as e:
+            raise RuntimeError(f"Failed to delete Dockerfile: {str(e)}")
+
+    def start_container(self, container_id: str) -> bool:
+        """
+        Start a Docker container and update metadata
+        """
+        command = ["docker", "start", container_id]
+        _, stderr, return_code = run_command(command)
+
+        if return_code != 0:
+            raise RuntimeError(f"Failed to start container: {stderr}")
+
+        # Update metadata to reflect the container's running status
+        metadata = self._load_metadata()
+        if "containers" in metadata and container_id in metadata["containers"]:
+            metadata["containers"][container_id]["status"] = "running"
+            metadata["containers"][container_id]["updated_at"] = datetime.now()
+            self._save_metadata(metadata)
+
+        return True
 
     def stop_container(self, container_id: str) -> bool:
         """
@@ -354,6 +464,25 @@ class DockerService:
             updated_at=datetime.fromisoformat(image_info["updated_at"]),
         )
 
+    def delete_image(self, image_id: str) -> bool:
+        """
+        Delete a Docker image and remove its metadata
+        """
+        # Delete the image from the system
+        command = ["docker", "rmi", "-f", image_id]
+        _, stderr, return_code = run_command(command)
+
+        if return_code != 0:
+            raise RuntimeError(f"Failed to delete image: {stderr}")
+
+        # Remove the image from metadata
+        metadata = self._load_metadata()
+        if "images" in metadata and image_id in metadata["images"]:
+            del metadata["images"][image_id]
+            self._save_metadata(metadata)
+
+        return True
+
     def run_container(
         self,
         image_id: str,
@@ -362,7 +491,8 @@ class DockerService:
         environment: Optional[Dict[str, str]] = None,
     ) -> DockerContainer:
         """
-        Run a Docker container
+        Run a Docker container. If a stopped container exists for the same image and name,
+        it will be restarted instead of creating a new one.
 
         Args:
             image_id: ID of the image to run
@@ -373,27 +503,87 @@ class DockerService:
         Returns:
             DockerContainer object with the running container details
         """
-        command = ["docker", "run", "-d"]
+        # Generate a name if none provided
+        if not name:
+            name = f"container_{image_id[:12]}"  # Simplified name for better reuse
 
-        if name:
+        # Check if container with this name already exists
+        existing_container_cmd = [
+            "docker",
+            "ps",
+            "-a",
+            "--filter",
+            f"name=^{name}$",
+            "--format",
+            "{{.ID}}",
+        ]
+        existing_id, _, _ = run_command(existing_container_cmd)
+
+        if existing_id.strip():
+            # Container exists, start it if it's stopped
+            container_id = existing_id.strip()
+            status_cmd = [
+                "docker",
+                "inspect",
+                "--format={{.State.Running}}",
+                container_id,
+            ]
+            is_running, _, _ = run_command(status_cmd)
+
+            if is_running.strip() == "false":
+                start_cmd = ["docker", "start", container_id]
+                _, stderr, return_code = run_command(start_cmd)
+                if return_code != 0:
+                    raise RuntimeError(f"Failed to start existing container: {stderr}")
+        else:
+            # No existing container, create new one
+            command = ["docker", "run", "-d", "--restart=unless-stopped"]
             command.extend(["--name", name])
 
-        if ports:
-            for host_port, container_port in ports.items():
-                command.extend(["-p", f"{host_port}:{container_port}"])
+            # Add default environment variables based on image
+            if not environment:
+                environment = {}
 
-        if environment:
+            # Check if it's a known image type and add appropriate settings
+            image_info_cmd = ["docker", "inspect", "--format={{.Config.Cmd}}", image_id]
+            image_info, _, _ = run_command(image_info_cmd)
+
+            if "python" in image_info.lower():
+                # For Python/Flask apps
+                environment["PYTHONUNBUFFERED"] = "1"
+                environment["FLASK_ENV"] = "development"
+            elif "node" in image_info.lower():
+                # For Node.js apps
+                environment["NODE_ENV"] = "development"
+            elif "postgres" in image_info.lower():
+                # For PostgreSQL
+                if "POSTGRES_PASSWORD" not in environment:
+                    environment["POSTGRES_PASSWORD"] = "postgres"
+                if "POSTGRES_USER" not in environment:
+                    environment["POSTGRES_USER"] = "postgres"
+
+            # Add environment variables
             for key, value in environment.items():
                 command.extend(["-e", f"{key}={value}"])
 
-        command.append(image_id)
+            # Add port mappings
+            if ports:
+                for host_port, container_port in ports.items():
+                    command.extend(["-p", f"{host_port}:{container_port}"])
 
-        stdout, stderr, return_code = run_command(command)
+            command.append(image_id)
 
-        if return_code != 0:
-            raise RuntimeError(f"Failed to run container: {stderr}")
+            stdout, stderr, return_code = run_command(command)
 
-        container_id = stdout.strip()
+            if return_code != 0:
+                raise RuntimeError(f"Failed to run container: {stderr}")
+
+            container_id = stdout.strip()
+
+            # Wait briefly for container to start
+            import time
+
+            time.sleep(2)
 
         # Get container details
         command = [
@@ -407,9 +597,27 @@ class DockerService:
         stdout, _, _ = run_command(command)
 
         if not stdout:
-            raise RuntimeError("Failed to get container details")
+            # If container not found in running containers, check all containers
+            command = [
+                "docker",
+                "ps",
+                "-a",
+                "--filter",
+                f"id={container_id}",
+                "--format",
+                "{{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Names}}",
+            ]
+            stdout, _, _ = run_command(command)
+            if not stdout:
+                raise RuntimeError("Failed to get container details")
 
         container_id, image, status, name = stdout.strip().split("\t")
+
+        # If container stopped immediately, check logs for error
+        if "Exited" in status:
+            logs_cmd = ["docker", "logs", container_id]
+            logs, _, _ = run_command(logs_cmd)
+            raise RuntimeError(f"Container stopped after starting. Logs:\n{logs}")
 
         return DockerContainer(
             id=container_id,
@@ -463,3 +671,27 @@ class DockerService:
                 content = content.replace(f"{{{key}}}", value)
 
         return self.create_dockerfile(name, content)
+
+    def get_dockerfile_content(self, dockerfile_id: str) -> str:
+        """
+        Get the content of a Dockerfile
+
+        Args:
+            dockerfile_id: ID of the Dockerfile to get
+
+        Returns:
+            String with the content of the Dockerfile
+        """
+        metadata = self._load_metadata()
+        dockerfile_info = metadata.get("dockerfiles", {}).get(dockerfile_id)
+
+        if not dockerfile_info:
+            raise ValueError(f"Dockerfile with ID {dockerfile_id} not found")
+
+        dockerfile_path = dockerfile_info["path"]
+
+        try:
+            with open(dockerfile_path, "r") as f:
+                return f.read()
+        except FileNotFoundError:
+            raise ValueError(f"Dockerfile file not found at {dockerfile_path}")

@@ -32,27 +32,54 @@ import {
   Trash,
 } from "lucide-react";
 import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const TableSkeleton = () => {
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div>
+          <CardTitle className="text-xl font-bold">Virtual Machines</CardTitle>
+          <CardDescription>Manage your virtual machines</CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent className="overflow-hidden">
+        <Table className="overflow-hidden">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>CPU</TableHead>
+              <TableHead>Memory</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className="overflow-hidden">
+            {[...Array(3)].map((_, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  <Skeleton className="h-4 w-32" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+};
+
 const VmTable = () => {
   const { vms, isLoadingVms, deleteVm, startVm, stopVm } = useVms();
   const { disks } = useDisks();
   const [isCreateVMOpen, setIsCreateVMOpen] = useState(false);
 
   if (isLoadingVms) {
-    return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <div>
-            <CardTitle className="text-xl font-bold">
-              Virtual Machines
-            </CardTitle>
-            <CardDescription>Manage your virtual machines</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent className="flex items-center justify-center py-8 text-center">
-          <h3 className="mt-4 text-lg font-semibold">Loading VMs...</h3>
-        </CardContent>
-      </Card>
-    );
+    return <TableSkeleton />;
   }
 
   if (!vms) {

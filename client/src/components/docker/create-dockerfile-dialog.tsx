@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import useDocker from "@/hooks/use-docker";
+import { DirectorySelector } from "@/components/docker/directory-selector";
 
 interface CreateDockerfileDialogProps {
   open: boolean;
@@ -71,15 +72,12 @@ const CreateDockerfileDialog = ({
               required
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="customPath">Custom Path (Optional)</Label>
-            <Input
-              id="customPath"
-              placeholder="e.g., /custom/path/to/dockerfile"
-              value={customPath}
-              onChange={(e) => setCustomPath(e.target.value)}
-            />
-          </div>
+          <DirectorySelector
+            value={customPath}
+            onChange={setCustomPath}
+            label="Custom Path (Optional)"
+            placeholder="e.g., /custom/path/to/dockerfile"
+          />
           <DialogFooter>
             <Button
               type="button"

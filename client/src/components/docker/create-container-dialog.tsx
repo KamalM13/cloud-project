@@ -27,13 +27,13 @@ const CreateContainerDialog = ({
   open,
   onOpenChange,
 }: CreateContainerDialogProps) => {
-  const { runContainer, images } = useDocker();
+  const { createContainer, images } = useDocker();
   const [selectedImage, setSelectedImage] = useState("");
   const [containerName, setContainerName] = useState("");
 
   const handleCreateContainer = async () => {
     try {
-      await runContainer({
+      await createContainer({
         image_id: selectedImage,
         name: containerName || undefined,
       });

@@ -24,26 +24,54 @@ import {
 import useDisks from "@/hooks/use-disk";
 import { HardDrive, MoreHorizontal, Plus, Trash } from "lucide-react";
 import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const TableSkeleton = () => {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div>
+          <CardTitle className="text-xl font-bold">Disks</CardTitle>
+          <CardDescription>Manage your storage disks</CardDescription>
+        </div>
+        <Skeleton className="h-10 w-32" />
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Size</TableHead>
+              <TableHead>Format</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {[...Array(3)].map((_, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  <Skeleton className="h-4 w-32" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+};
 
 const DiskTable = () => {
   const { disks, isDisksLoading, isDisksError, deleteDisk } = useDisks();
   const [isCreateDiskOpen, setIsCreateDiskOpen] = useState(false);
 
   if (isDisksLoading) {
-    return (
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <div>
-            <CardTitle className="text-xl font-bold">Disks</CardTitle>
-            <CardDescription>Manage your storage disks</CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent className="flex items-center justify-center py-8 text-center">
-          <HardDrive className="h-12 w-12 text-muted-foreground" />
-          <h3 className="mt-4 text-lg font-semibold">Loading disks...</h3>
-        </CardContent>
-      </Card>
-    );
+    return <TableSkeleton />;
   }
 
   if (isDisksError) {

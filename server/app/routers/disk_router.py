@@ -29,7 +29,6 @@ def create_disk(
     Create a new virtual disk with specified parameters.
     """
     try:
-        print(request)
         return service.create_disk(request)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -114,6 +114,7 @@ const DockerImageTable = () => {
   if (isImagesLoading) {
     return <TableSkeleton />;
   }
+  console.log(images);
 
   return (
     <div className="space-y-6 p-6 rounded-lg bg-card">

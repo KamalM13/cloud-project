@@ -319,7 +319,10 @@ export default function useDocker() {
 
   const createDockerfileFromTemplateMutation = useMutation({
     mutationFn: async (template: DockerfileTemplateCreate) => {
-      const response = await api.post("/api/docker/templates/create", template);
+      const response = await api.post(
+        "/api/docker/dockerfiles/template",
+        template
+      );
       return response.data;
     },
   });
@@ -338,6 +341,7 @@ export default function useDocker() {
     isImagesError,
     buildImage: buildImageMutation.mutateAsync,
     pullImage: pullImageMutation.mutateAsync,
+    pullImageMutation,
     deleteImage: deleteImageMutation.mutateAsync,
     searchImage: searchImageMutation.mutateAsync,
 
@@ -346,6 +350,7 @@ export default function useDocker() {
     isContainersLoading,
     isContainersError,
     createContainer: createContainerMutation.mutateAsync,
+    createContainerMutation,
     startContainer: startContainerMutation.mutateAsync,
     stopContainer: stopContainerMutation.mutateAsync,
     deleteContainer: deleteContainerMutation.mutateAsync,

@@ -54,7 +54,7 @@ class DiskService:
             DiskResponse object with the created disk details
         """
         # Validate format
-        if request.format not in ["qcow2", "raw", "vdi", "vmdk"]:
+        if request.format not in ["qcow2", "raw", "vdi", "vmdk", "vhdx"]:
             raise ValueError(f"Unsupported disk format: {request.format}")
 
         # Create unique filename
@@ -255,7 +255,17 @@ class DiskService:
 
         # Resize disk if new size provided
         if request.size is not None:
-            command = ["qemu-img", "resize", disk_info["path"], request.size]
+            current_size = disk_info["size"]
+            command = ["qemu-img", "resize", "-f", disk_info["format"]]
+
+            # Check if the new size is less than the current size
+            if request.size < current_size:
+                logger.warning(
+                    "Shrinking disk image - this will delete all data beyond the shrunken image's end"
+                )
+                command.append("--shrink")
+
+            command.extend([disk_info["path"], request.size])
             run_command(command)
             disk_info["size"] = request.size
 

@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import useDocker from "@/hooks/use-docker";
 import { ImageSearch } from "./image-search";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface PullImageDialogProps {
   open: boolean;
@@ -20,7 +21,7 @@ interface PullImageDialogProps {
 const PullImageDialog = ({ open, onOpenChange }: PullImageDialogProps) => {
   const [imageName, setImageName] = useState("");
   const [tag, setTag] = useState("latest");
-  const { pullImage } = useDocker();
+  const { pullImage, pullImageMutation } = useDocker();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,10 +61,20 @@ const PullImageDialog = ({ open, onOpenChange }: PullImageDialogProps) => {
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              disabled={pullImageMutation.isPending}
             >
               Cancel
             </Button>
-            <Button type="submit">Pull Image</Button>
+            <Button type="submit" disabled={pullImageMutation.isPending}>
+              {pullImageMutation.isPending ? (
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-4 rounded-full" />
+                  <span>Pulling...</span>
+                </div>
+              ) : (
+                "Pull Image"
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

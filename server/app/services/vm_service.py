@@ -238,6 +238,11 @@ class VMService:
             disk.path,
             "-boot",
             "d",
+            # Add networking configuration
+            "-net",
+            "nic,model=virtio",
+            "-net",
+            "user,hostfwd=tcp::2222-:22",  # Forward host port 2222 to guest port 22
         ]
 
         # Add ISO if it exists
@@ -269,7 +274,8 @@ class VMService:
                 # Track the running VM with the QEMU PID
                 self.running_vms[vm_id] = qemu_pid
 
-                vm_info["ip_address"] = "192.168.122." + str(hash(vm_id) % 253 + 1)
+                # Set IP address to localhost since we're using port forwarding
+                vm_info["ip_address"] = "127.0.0.1:2222"
                 self._save_metadata(metadata)
             else:
                 raise RuntimeError("Failed to find QEMU process")

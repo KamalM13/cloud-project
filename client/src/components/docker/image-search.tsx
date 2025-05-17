@@ -74,7 +74,7 @@ export function ImageSearch({ onSelect, value }: ImageSearchProps) {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
-        <Command>
+        <Command className="w-96 overflow-y-auto">
           <CommandInput
             placeholder="Search Docker Hub..."
             value={searchQuery}

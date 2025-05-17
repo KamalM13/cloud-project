@@ -182,6 +182,7 @@ class DockerService:
         command = ["docker", "images", "--format", "{{.ID}}\t{{.Repository}}\t{{.Tag}}"]
         stdout, _, _ = run_command(command)
 
+        metadata = self._load_metadata()
         images = []
         for line in stdout.strip().split("\n"):
             if not line:
@@ -189,11 +190,14 @@ class DockerService:
             image_id, repository, tag = line.split("\t")
             full_tag = f"{repository}:{tag}" if tag != "<none>" else repository
 
+            # Check if the image is created locally by looking for its ID in metadata
+            dockerfile_id = metadata["images"].get(image_id, {}).get("dockerfile_id")
+
             images.append(
                 DockerImage(
                     id=image_id,
                     tag=full_tag,
-                    dockerfile_id=None,  # We don't track this for pulled images
+                    dockerfile_id=dockerfile_id,  # Use the dockerfile_id from metadata if available
                     created_at=datetime.now(),  # Docker doesn't provide this easily
                     updated_at=datetime.now(),
                 )

@@ -18,7 +18,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import useDisks from "@/hooks/use-disk";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 
 interface DiskDialogProps {
   open: boolean;
@@ -46,6 +46,11 @@ const CreateDiskDialog = ({ open, onOpenChange }: DiskDialogProps) => {
       format: "qcow2",
       dynamic: true,
     },
+  });
+
+  const selectedFormat = useWatch({
+    control,
+    name: "format",
   });
 
   const onSubmit = handleSubmit(async (data) => {
@@ -142,10 +147,16 @@ const CreateDiskDialog = ({ open, onOpenChange }: DiskDialogProps) => {
                     id="dynamic"
                     checked={field.value}
                     onCheckedChange={field.onChange}
+                    disabled={selectedFormat !== "qcow2"}
                   />
                 )}
               />
               <Label htmlFor="dynamic">Dynamic Disk</Label>
+              {selectedFormat !== "qcow2" && (
+                <span className="text-sm text-gray-500 ml-2">
+                  (Only available for QCOW2 format)
+                </span>
+              )}
             </div>
           </div>
 

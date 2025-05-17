@@ -1,7 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import List
 
-from app.models.disk import CreateDiskRequest, DiskResponse, DiskListResponse
+from app.models.disk import (
+    CreateDiskRequest,
+    DiskResponse,
+    DiskListResponse,
+    EditDiskRequest,
+)
 from app.services.disk_service import DiskService
 
 router = APIRouter(
@@ -10,18 +15,22 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 # Dependency
 def get_disk_service():
     return DiskService()
 
 
 @router.post("/", response_model=DiskResponse, status_code=201)
-def create_disk(request: CreateDiskRequest, service: DiskService = Depends(get_disk_service)):
+def create_disk(
+    request: CreateDiskRequest, service: DiskService = Depends(get_disk_service)
+):
     """
     Create a new virtual disk with specified parameters.
     """
     try:
-        return service.create_disk(request.name, request.size, request.format)
+        print(request)
+        return service.create_disk(request)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -58,3 +67,15 @@ def delete_disk(disk_id: str, service: DiskService = Depends(get_disk_service)):
         return None
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.patch("/{disk_id}", response_model=DiskResponse)
+def edit_disk(
+    disk_id: str,
+    request: EditDiskRequest,
+    service: DiskService = Depends(get_disk_service),
+):
+    """
+    Edit a virtual disk.
+    """
+    return service.edit_disk(disk_id, request)

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import useDocker from "@/hooks/use-docker";
+import { ImageSearch } from "./image-search";
 
 interface PullImageDialogProps {
   open: boolean;
@@ -42,13 +43,7 @@ const PullImageDialog = ({ open, onOpenChange }: PullImageDialogProps) => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="imageName">Image Name</Label>
-            <Input
-              id="imageName"
-              placeholder="e.g., nginx, node, python"
-              value={imageName}
-              onChange={(e) => setImageName(e.target.value)}
-              required
-            />
+            <ImageSearch value={imageName} onSelect={setImageName} />
           </div>
           <div className="space-y-2">
             <Label htmlFor="tag">Tag</Label>

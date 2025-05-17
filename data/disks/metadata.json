@@ -1,1 +1,200 @@
-{}
+{
+  "b1a552ee-e68c-4ccc-a748-ad41aa20c04d": {
+    "id": "b1a552ee-e68c-4ccc-a748-ad41aa20c04d",
+    "name": "test",
+    "size": "10G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\test_b1a552ee-e68c-4ccc-a748-ad41aa20c04d.qcow2",
+    "in_use": true,
+    "dynamic": true,
+    "created_at": "2025-05-17T18:39:21.602795",
+    "updated_at": "2025-05-17T18:42:16.095568"
+  },
+  "bdaaa40b-e4f4-4732-8324-5a6510ad5a1d": {
+    "id": "bdaaa40b-e4f4-4732-8324-5a6510ad5a1d",
+    "name": "test-disk",
+    "size": "10G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\test-disk_bdaaa40b-e4f4-4732-8324-5a6510ad5a1d.qcow2",
+    "in_use": false,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:08:34.380979",
+    "updated_at": "2025-05-17T19:08:34.380979"
+  },
+  "a42dd60d-b9a9-416f-847d-784c375cf651": {
+    "id": "a42dd60d-b9a9-416f-847d-784c375cf651",
+    "name": "new-disk",
+    "size": "10G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\new-disk_a42dd60d-b9a9-416f-847d-784c375cf651.qcow2",
+    "in_use": false,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:08:34.827348",
+    "updated_at": "2025-05-17T19:08:34.827348"
+  },
+  "aad7737c-070c-4d8c-805d-5fb1bc492d15": {
+    "id": "aad7737c-070c-4d8c-805d-5fb1bc492d15",
+    "name": "test-disk",
+    "size": "10G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\test-disk_aad7737c-070c-4d8c-805d-5fb1bc492d15.qcow2",
+    "in_use": false,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:09:41.649651",
+    "updated_at": "2025-05-17T19:09:41.649651"
+  },
+  "4609e4fa-ce15-4fd9-ab8b-1c5053a03c29": {
+    "id": "4609e4fa-ce15-4fd9-ab8b-1c5053a03c29",
+    "name": "new-disk",
+    "size": "20G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\new-disk_4609e4fa-ce15-4fd9-ab8b-1c5053a03c29.qcow2",
+    "in_use": false,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:09:42.182849",
+    "updated_at": "2025-05-17T19:09:42.182849"
+  },
+  "0c41b136-0cd1-4b5a-bc22-7d471c59b427": {
+    "id": "0c41b136-0cd1-4b5a-bc22-7d471c59b427",
+    "name": "vm-test-disk",
+    "size": "10G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\vm-test-disk_0c41b136-0cd1-4b5a-bc22-7d471c59b427.qcow2",
+    "in_use": true,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:09:43.002721",
+    "updated_at": "2025-05-17T19:09:43.185016"
+  },
+  "13fbc407-c8ec-424e-8b52-a7a2e3b40836": {
+    "id": "13fbc407-c8ec-424e-8b52-a7a2e3b40836",
+    "name": "get-vm-test-disk",
+    "size": "10G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\get-vm-test-disk_13fbc407-c8ec-424e-8b52-a7a2e3b40836.qcow2",
+    "in_use": true,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:09:43.465997",
+    "updated_at": "2025-05-17T19:09:43.636884"
+  },
+  "197f7671-06a4-4f5a-b777-3f3d38211488": {
+    "id": "197f7671-06a4-4f5a-b777-3f3d38211488",
+    "name": "delete-vm-test-disk",
+    "size": "10G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\delete-vm-test-disk_197f7671-06a4-4f5a-b777-3f3d38211488.qcow2",
+    "in_use": false,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:09:44.089430",
+    "updated_at": "2025-05-17T19:09:44.492329"
+  },
+  "1662be37-3bd4-45b8-b23d-ff59591d57f4": {
+    "id": "1662be37-3bd4-45b8-b23d-ff59591d57f4",
+    "name": "test-disk",
+    "size": "10G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\test-disk_1662be37-3bd4-45b8-b23d-ff59591d57f4.qcow2",
+    "in_use": false,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:11:33.717364",
+    "updated_at": "2025-05-17T19:11:33.717364"
+  },
+  "42ac324f-7873-455b-a52c-4e957f65a6f5": {
+    "id": "42ac324f-7873-455b-a52c-4e957f65a6f5",
+    "name": "new-disk",
+    "size": "20G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\new-disk_42ac324f-7873-455b-a52c-4e957f65a6f5.qcow2",
+    "in_use": false,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:11:34.313192",
+    "updated_at": "2025-05-17T19:11:34.313192"
+  },
+  "138107e4-621a-4248-847f-783dfd0fa367": {
+    "id": "138107e4-621a-4248-847f-783dfd0fa367",
+    "name": "vm-test-disk",
+    "size": "10G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\vm-test-disk_138107e4-621a-4248-847f-783dfd0fa367.qcow2",
+    "in_use": true,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:11:49.169133",
+    "updated_at": "2025-05-17T19:11:49.344747"
+  },
+  "f668184a-fcac-4867-8912-afffae61c650": {
+    "id": "f668184a-fcac-4867-8912-afffae61c650",
+    "name": "get-vm-test-disk",
+    "size": "10G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\get-vm-test-disk_f668184a-fcac-4867-8912-afffae61c650.qcow2",
+    "in_use": true,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:11:49.619333",
+    "updated_at": "2025-05-17T19:11:49.792025"
+  },
+  "c0ecf368-38ae-433b-b541-c6b072ff2755": {
+    "id": "c0ecf368-38ae-433b-b541-c6b072ff2755",
+    "name": "delete-vm-test-disk",
+    "size": "10G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\delete-vm-test-disk_c0ecf368-38ae-433b-b541-c6b072ff2755.qcow2",
+    "in_use": false,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:11:50.244571",
+    "updated_at": "2025-05-17T19:11:50.666848"
+  },
+  "b5b3d7fd-4cb9-496f-a126-e8bddaf65459": {
+    "id": "b5b3d7fd-4cb9-496f-a126-e8bddaf65459",
+    "name": "test-disk",
+    "size": "10G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\test-disk_b5b3d7fd-4cb9-496f-a126-e8bddaf65459.qcow2",
+    "in_use": false,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:12:31.123983",
+    "updated_at": "2025-05-17T19:12:31.123983"
+  },
+  "4f1effca-8866-4e08-9d2e-39d5361c5591": {
+    "id": "4f1effca-8866-4e08-9d2e-39d5361c5591",
+    "name": "new-disk",
+    "size": "20G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\new-disk_4f1effca-8866-4e08-9d2e-39d5361c5591.qcow2",
+    "in_use": false,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:12:31.649808",
+    "updated_at": "2025-05-17T19:12:31.649808"
+  },
+  "c530dba3-6563-4d53-933d-169f53cfe442": {
+    "id": "c530dba3-6563-4d53-933d-169f53cfe442",
+    "name": "vm-test-disk",
+    "size": "10G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\vm-test-disk_c530dba3-6563-4d53-933d-169f53cfe442.qcow2",
+    "in_use": true,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:12:42.962838",
+    "updated_at": "2025-05-17T19:12:43.131733"
+  },
+  "6a4c9d77-923e-41b4-a27e-386d4b37c4e2": {
+    "id": "6a4c9d77-923e-41b4-a27e-386d4b37c4e2",
+    "name": "get-vm-test-disk",
+    "size": "10G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\get-vm-test-disk_6a4c9d77-923e-41b4-a27e-386d4b37c4e2.qcow2",
+    "in_use": true,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:12:43.435953",
+    "updated_at": "2025-05-17T19:12:43.677367"
+  },
+  "f2b0345f-b628-4864-8152-8c8b33dbd1a6": {
+    "id": "f2b0345f-b628-4864-8152-8c8b33dbd1a6",
+    "name": "delete-vm-test-disk",
+    "size": "10G",
+    "format": "qcow2",
+    "path": "C:\\Users\\KamalM12\\Vscode\\Cloud Project\\data\\disks\\delete-vm-test-disk_f2b0345f-b628-4864-8152-8c8b33dbd1a6.qcow2",
+    "in_use": false,
+    "dynamic": true,
+    "created_at": "2025-05-17T19:12:44.131040",
+    "updated_at": "2025-05-17T19:12:44.473761"
+  }
+}

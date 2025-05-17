@@ -18,12 +18,14 @@ import {
 } from "@/components/ui/select";
 import useDisks from "@/hooks/use-disk";
 import useVms from "@/hooks/use-vms";
+import { VM } from "@/types/vm";
 
 import { Controller, useForm } from "react-hook-form";
 
-interface CreateVmDialogProps {
+interface EditVmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  vm: VM;
 }
 
 type FormValues = {
@@ -33,44 +35,46 @@ type FormValues = {
   name: string;
 };
 
-const CreateVmDialog = ({
-  open: isCreateVMOpen,
-  onOpenChange: setIsCreateVMOpen,
-}: CreateVmDialogProps) => {
+const EditVmDialog = ({
+  open: isEditVMOpen,
+  onOpenChange: setIsEditVMOpen,
+  vm,
+}: EditVmDialogProps) => {
   const { disks } = useDisks();
-  const { createVm } = useVms();
+  const { editVm } = useVms();
 
   const {
     register,
     handleSubmit,
     control,
     formState: { errors },
-    watch,
+    getValues,
   } = useForm<FormValues>({
     defaultValues: {
-      disk_id: "",
-      cpu: 1,
-      memory: 1024,
-      name: "",
+      disk_id: vm.disk_id,
+      cpu: vm.cpu_cores,
+      memory: vm.memory_size,
+      name: vm.name,
     },
   });
 
   if (!disks) {
     return null;
   }
+
   const onSubmit = handleSubmit(async (data) => {
-    console.log("Form data:", data);
-    await createVm(data);
-    setIsCreateVMOpen(false);
+    await editVm(vm.id, data);
+    setIsEditVMOpen(false);
   });
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4" id="create-vm-form">
-      <Dialog open={isCreateVMOpen} onOpenChange={setIsCreateVMOpen}>
+    <form onSubmit={onSubmit} className="space-y-4" id="edit-vm-form">
+      <Dialog open={isEditVMOpen} onOpenChange={setIsEditVMOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Virtual Machine</DialogTitle>
+            <DialogTitle>Edit Virtual Machine</DialogTitle>
             <DialogDescription>
-              Fill in the details to create a new virtual machine.
+              Update the details of your virtual machine.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -155,13 +159,17 @@ const CreateVmDialog = ({
                     </SelectTrigger>
                     <SelectContent>
                       {disks
-                        .filter((disk) => !disk.in_use)
+                        .filter(
+                          (disk) => !disk.in_use || disk.id === vm.disk_id
+                        )
                         .map((disk) => (
                           <SelectItem key={disk.id} value={disk.id}>
                             {disk.name} ({disk.size})
                           </SelectItem>
                         ))}
-                      {disks.filter((disk) => !disk.in_use).length === 0 && (
+                      {disks.filter(
+                        (disk) => !disk.in_use || disk.id === vm.disk_id
+                      ).length === 0 && (
                         <SelectItem value="none" disabled>
                           No available disks
                         </SelectItem>
@@ -177,16 +185,16 @@ const CreateVmDialog = ({
           </div>
           <DialogFooter>
             <Button
-              form="create-vm-form"
+              form="edit-vm-form"
               type="submit"
               disabled={
-                watch("name") === "" ||
-                watch("disk_id") === "" ||
-                watch("cpu") === 0 ||
-                watch("memory") === 0
+                getValues("name") === "" ||
+                getValues("disk_id") === "" ||
+                getValues("cpu") === 0 ||
+                getValues("memory") === 0
               }
             >
-              Create VM
+              Update VM
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -195,4 +203,4 @@ const CreateVmDialog = ({
   );
 };
 
-export default CreateVmDialog;
+export default EditVmDialog;

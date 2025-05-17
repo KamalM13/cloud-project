@@ -20,7 +20,7 @@ interface Dockerfile {
 interface DockerImage {
   id: string;
   tag: string;
-  dockerfile_id?: string;
+  dockerfile_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -40,6 +40,13 @@ interface DockerfileCreate {
   custom_path?: string;
 }
 
+interface DockerfileTemplate {
+  id: string;
+  name: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
 interface DockerfileTemplateCreate {
   name: string;
   template_id: string;
@@ -56,6 +63,14 @@ interface ContainerRun {
   name?: string;
   ports?: Record<string, string>;
   environment?: Record<string, string>;
+}
+
+interface SearchResult {
+  name: string;
+  description: string;
+  stars: number;
+  official: boolean;
+  automated: boolean;
 }
 
 export default function useDocker() {
@@ -147,10 +162,11 @@ export default function useDocker() {
       image_name: string;
       tag?: string;
     }) => {
-      const response = await api.post("/api/docker/images/pull", {
-        image_name,
-        tag,
-      });
+      const response = await api.post(
+        `/api/docker/images/pull?image_name=${encodeURIComponent(image_name)}${
+          tag ? `&tag=${encodeURIComponent(tag)}` : ""
+        }`
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -160,6 +176,22 @@ export default function useDocker() {
     onError: (error: AxiosError<ErrorResponse>) => {
       toast.error(
         `Failed to pull image: ${
+          error.response?.data?.message || error.message
+        }`
+      );
+    },
+  });
+
+  const searchImageMutation = useMutation({
+    mutationFn: async (query: string) => {
+      const response = await api.get<SearchResult[]>(
+        `/api/docker/search?query=${encodeURIComponent(query)}`
+      );
+      return response.data;
+    },
+    onError: (error: AxiosError<ErrorResponse>) => {
+      toast.error(
+        `Failed to search images: ${
           error.response?.data?.message || error.message
         }`
       );
@@ -251,49 +283,11 @@ export default function useDocker() {
       toast.success("Container deleted successfully");
     },
     onError: (error: AxiosError<ErrorResponse>) => {
-      toast.error(`Failed to delete container: ${error.message}`);
-    },
-  });
-
-  // Templates
-  const {
-    data: templates,
-    isLoading: isTemplatesLoading,
-    isError: isTemplatesError,
-  } = useQuery({
-    queryKey: ["templates"],
-    queryFn: async () => {
-      const response = await api.get("/api/docker/templates");
-      return response.data;
-    },
-  });
-
-  const createDockerfileFromTemplateMutation = useMutation({
-    mutationFn: async (dockerfile: DockerfileTemplateCreate) => {
-      const response = await api.post(
-        "/api/docker/dockerfiles/template",
-        dockerfile
-      );
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dockerfiles"] });
-      toast.success("Dockerfile created from template successfully");
-    },
-    onError: (error: AxiosError<ErrorResponse>) => {
       toast.error(
-        `Failed to create Dockerfile from template: ${
+        `Failed to delete container: ${
           error.response?.data?.message || error.message
         }`
       );
-    },
-  });
-
-  // Search
-  const searchImageMutation = useMutation({
-    mutationFn: async (query: string) => {
-      const response = await api.get(`/api/docker/search?query=${query}`);
-      return response.data;
     },
   });
 
@@ -307,59 +301,58 @@ export default function useDocker() {
       toast.success("Image deleted successfully");
     },
     onError: (error: AxiosError<ErrorResponse>) => {
-      toast.error(`Failed to delete image: ${error.message}`);
+      toast.error(
+        `Failed to delete image: ${
+          error.response?.data?.message || error.message
+        }`
+      );
     },
   });
 
-  // Get Dockerfile content
-  const getDockerfileContent = async (
-    dockerfileId: string
-  ): Promise<string> => {
-    try {
-      const response = await api.get(
-        `/api/docker/dockerfiles/${dockerfileId}/content`
-      );
-      return response.data.content;
-    } catch (error) {
-      console.error("Failed to get Dockerfile content:", error);
-      toast.error("Failed to load Dockerfile content");
-      throw error;
-    }
-  };
+  const { data: templates } = useQuery<DockerfileTemplate[]>({
+    queryKey: ["templates"],
+    queryFn: async () => {
+      const response = await api.get("/api/docker/templates");
+      return response.data;
+    },
+  });
+
+  const createDockerfileFromTemplateMutation = useMutation({
+    mutationFn: async (template: DockerfileTemplateCreate) => {
+      const response = await api.post("/api/docker/templates/create", template);
+      return response.data;
+    },
+  });
 
   return {
     // Dockerfiles
     dockerfiles,
     isDockerfilesLoading,
     isDockerfilesError,
-    createDockerfile: createDockerfileMutation.mutate,
-    createDockerfileFromTemplate: createDockerfileFromTemplateMutation.mutate,
-    deleteDockerfile: deleteDockerfileMutation.mutate,
-    getDockerfileContent,
+    createDockerfile: createDockerfileMutation.mutateAsync,
+    deleteDockerfile: deleteDockerfileMutation.mutateAsync,
 
     // Images
     images,
     isImagesLoading,
     isImagesError,
-    buildImage: buildImageMutation.mutate,
-    pullImage: pullImageMutation.mutate,
+    buildImage: buildImageMutation.mutateAsync,
+    pullImage: pullImageMutation.mutateAsync,
+    deleteImage: deleteImageMutation.mutateAsync,
+    searchImage: searchImageMutation.mutateAsync,
 
     // Containers
     containers,
     isContainersLoading,
     isContainersError,
-    createContainer: createContainerMutation.mutate,
-    startContainer: startContainerMutation.mutate,
-    stopContainer: stopContainerMutation.mutate,
-    deleteContainer: deleteContainerMutation.mutate,
+    createContainer: createContainerMutation.mutateAsync,
+    startContainer: startContainerMutation.mutateAsync,
+    stopContainer: stopContainerMutation.mutateAsync,
+    deleteContainer: deleteContainerMutation.mutateAsync,
 
     // Templates
     templates,
-    isTemplatesLoading,
-    isTemplatesError,
-
-    // Search
-    searchImage: searchImageMutation.mutate,
-    deleteImage: deleteImageMutation.mutate,
+    createDockerfileFromTemplate:
+      createDockerfileFromTemplateMutation.mutateAsync,
   };
 }

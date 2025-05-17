@@ -84,21 +84,50 @@ export default function useVms() {
     },
   });
 
-  const createVm = (newVm: CreateVm) => {
-    createVmMutation.mutate(newVm);
+  const editVmMutation = useMutation({
+    mutationFn: async ({ vmId, newVm }: { vmId: string; newVm: CreateVm }) => {
+      const response = await api.put(`api/vms/${vmId}`, {
+        name: newVm.name,
+        cpu_cores: newVm.cpu,
+        memory_size: newVm.memory,
+        disk_id: newVm.disk_id,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vms"] });
+      queryClient.invalidateQueries({ queryKey: ["disks"] });
+      toast.success("VM updated successfully");
+    },
+    onError: (error) => {
+      console.error("Error updating VM:", error);
+      toast.error(
+        "Failed to update VM. Please try again.",
+        error.response.data
+      );
+    },
+  });
+
+  const createVm = async (newVm: CreateVm) => {
+    await createVmMutation.mutateAsync(newVm);
   };
 
-  const deleteVm = (vmId: string) => {
-    deleteVmMutation.mutate(vmId);
+  const deleteVm = async (vmId: string) => {
+    await deleteVmMutation.mutateAsync(vmId);
   };
 
-  const startVm = (vmId: string) => {
-    startVmMutation.mutate(vmId);
+  const startVm = async (vmId: string) => {
+    await startVmMutation.mutateAsync(vmId);
   };
 
-  const stopVm = (vmId: string) => {
-    stopVmMutation.mutate(vmId);
+  const stopVm = async (vmId: string) => {
+    await stopVmMutation.mutateAsync(vmId);
   };
+
+  const editVm = async (vmId: string, newVm: CreateVm) => {
+    await editVmMutation.mutateAsync({ vmId, newVm });
+  };
+
   return {
     vms,
     isLoadingVms: isLoading,
@@ -107,5 +136,6 @@ export default function useVms() {
     deleteVm,
     startVm,
     stopVm,
+    editVm,
   };
 }

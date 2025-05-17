@@ -21,6 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import CreateVmDialog from "@/components/vms/create-vm";
+import EditVmDialog from "@/components/vms/edit-vm";
 import useDisks from "@/hooks/use-disk";
 import useVms from "@/hooks/use-vms";
 import {
@@ -30,9 +31,11 @@ import {
   Server,
   Square,
   Trash,
+  Pencil,
 } from "lucide-react";
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { VM } from "@/types/vm";
 
 const TableSkeleton = () => {
   return (
@@ -77,6 +80,7 @@ const VmTable = () => {
   const { vms, isLoadingVms, deleteVm, startVm, stopVm } = useVms();
   const { disks } = useDisks();
   const [isCreateVMOpen, setIsCreateVMOpen] = useState(false);
+  const [editingVm, setEditingVm] = useState<VM | null>(null);
 
   if (isLoadingVms) {
     return <TableSkeleton />;
@@ -121,6 +125,13 @@ const VmTable = () => {
   return (
     <>
       <CreateVmDialog open={isCreateVMOpen} onOpenChange={setIsCreateVMOpen} />
+      {editingVm && (
+        <EditVmDialog
+          open={!!editingVm}
+          onOpenChange={(open) => !open && setEditingVm(null)}
+          vm={editingVm}
+        />
+      )}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div className="w-full">
@@ -199,6 +210,13 @@ const VmTable = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => setEditingVm(vm)}
+                              disabled={vm.status === "running"}
+                            >
+                              <Pencil className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => deleteVm(vm.id)}
                               disabled={vm.status === "running"}

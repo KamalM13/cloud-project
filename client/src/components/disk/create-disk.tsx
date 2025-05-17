@@ -15,6 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import useDisks from "@/hooks/use-disk";
 import { Controller, useForm } from "react-hook-form";
 
@@ -27,6 +29,7 @@ interface DiskFormValues {
   name: string;
   size: string;
   format: "qcow2" | "raw" | "vmdk" | "vhdx" | "vdi";
+  dynamic: boolean;
 }
 
 const CreateDiskDialog = ({ open, onOpenChange }: DiskDialogProps) => {
@@ -39,14 +42,23 @@ const CreateDiskDialog = ({ open, onOpenChange }: DiskDialogProps) => {
   } = useForm<DiskFormValues>({
     defaultValues: {
       name: "",
-      size: "1",
+      size: "10",
       format: "qcow2",
+      dynamic: true,
     },
   });
-  const onSubmit = handleSubmit((data) => {
-    console.log("Creating Disk:", data);
-    addDisk(data);
+
+  const onSubmit = handleSubmit(async (data) => {
+    // Append 'G' to the size value
+    const formattedData = {
+      ...data,
+      size: `${data.size}G`,
+    };
+    console.log("Creating Disk:", formattedData);
+    await addDisk(formattedData);
+    onOpenChange(false);
   });
+
   return (
     <form id="create-disk-form" onSubmit={onSubmit} className="space-y-4">
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -58,7 +70,7 @@ const CreateDiskDialog = ({ open, onOpenChange }: DiskDialogProps) => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-4">
             <div className="space-y-2">
               <Input
                 type="text"
@@ -70,23 +82,28 @@ const CreateDiskDialog = ({ open, onOpenChange }: DiskDialogProps) => {
                 <span className="text-red-500">{errors.name.message}</span>
               )}
             </div>
+
             <div className="space-y-2">
-              <Input
-                type="number"
-                placeholder="Disk Size (e.g., 20G)"
-                className="w-full"
-                min={1}
-                max={30}
-                {...register("size", {
-                  required: "Size is required",
-                  min: { value: 1, message: "Size must be at least 1" },
-                  max: { value: 30, message: "Size cannot exceed 30" },
-                })}
-              />
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  placeholder="Disk Size"
+                  className="w-full"
+                  min={1}
+                  max={1000}
+                  {...register("size", {
+                    required: "Size is required",
+                    min: { value: 1, message: "Size must be at least 1GB" },
+                    max: { value: 1000, message: "Size cannot exceed 1000GB" },
+                  })}
+                />
+                <span className="text-sm text-gray-500">GB</span>
+              </div>
               {errors.size && (
                 <span className="text-red-500">{errors.size.message}</span>
               )}
             </div>
+
             <div className="space-y-2">
               <Controller
                 name="format"
@@ -115,22 +132,25 @@ const CreateDiskDialog = ({ open, onOpenChange }: DiskDialogProps) => {
                 <span className="text-red-500">{errors.format.message}</span>
               )}
             </div>
+
+            <div className="flex items-center space-x-2">
+              <Controller
+                name="dynamic"
+                control={control}
+                render={({ field }) => (
+                  <Switch
+                    id="dynamic"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
+              <Label htmlFor="dynamic">Dynamic Disk</Label>
+            </div>
           </div>
+
           <DialogFooter>
-            <Button
-              type="submit"
-              form="create-disk-form"
-              onClick={() => {
-                if (
-                  errors.name?.message ||
-                  errors.size?.message ||
-                  errors.format?.message
-                ) {
-                  return;
-                }
-                onOpenChange(false);
-              }}
-            >
+            <Button type="submit" form="create-disk-form">
               Create Disk
             </Button>
           </DialogFooter>

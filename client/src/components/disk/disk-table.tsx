@@ -22,9 +22,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import useDisks from "@/hooks/use-disk";
-import { HardDrive, MoreHorizontal, Plus, Trash } from "lucide-react";
+import { HardDrive, MoreHorizontal, Pencil, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Disk } from "@/types/disk";
+import EditDiskDialog from "@/components/disk/edit-disk";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const TableSkeleton = () => {
   return (
@@ -69,6 +72,7 @@ const TableSkeleton = () => {
 const DiskTable = () => {
   const { disks, isDisksLoading, isDisksError, deleteDisk } = useDisks();
   const [isCreateDiskOpen, setIsCreateDiskOpen] = useState(false);
+  const [editingDisk, setEditingDisk] = useState<Disk | null>(null);
 
   if (isDisksLoading) {
     return <TableSkeleton />;
@@ -131,6 +135,7 @@ const DiskTable = () => {
                   <TableHead>Size</TableHead>
                   <TableHead>Format</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Dynamic</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -151,6 +156,9 @@ const DiskTable = () => {
                         </span>
                       )}
                     </TableCell>
+                    <TableCell className="text-center">
+                      <Checkbox checked={disk.dynamic} disabled />
+                    </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -169,6 +177,15 @@ const DiskTable = () => {
                           >
                             <Trash className="mr-2 h-4 w-4" />
                             Delete
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            disabled={disk.in_use}
+                            onClick={() => {
+                              setEditingDisk(disk);
+                            }}
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -196,6 +213,13 @@ const DiskTable = () => {
         open={isCreateDiskOpen}
         onOpenChange={setIsCreateDiskOpen}
       />
+      {editingDisk && (
+        <EditDiskDialog
+          open={!!editingDisk}
+          onOpenChange={() => setEditingDisk(null)}
+          disk={editingDisk}
+        />
+      )}
     </>
   );
 };

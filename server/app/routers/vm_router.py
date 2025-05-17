@@ -11,9 +11,11 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
+
 # Dependencies
 def get_disk_service():
     return DiskService()
+
 
 def get_vm_service(disk_service: DiskService = Depends(get_disk_service)):
     return VMService(disk_service)
@@ -26,10 +28,7 @@ def create_vm(request: CreateVMRequest, service: VMService = Depends(get_vm_serv
     """
     try:
         return service.create_vm(
-            request.name,
-            request.cpu_cores,
-            request.memory_size,
-            request.disk_id
+            request.name, request.cpu_cores, request.memory_size, request.disk_id
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -87,5 +86,20 @@ def delete_vm(vm_id: str, service: VMService = Depends(get_vm_service)):
         if not success:
             raise HTTPException(status_code=404, detail="VM not found")
         return None
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.put("/{vm_id}", response_model=VMResponse)
+def edit_vm(
+    vm_id: str, request: CreateVMRequest, service: VMService = Depends(get_vm_service)
+):
+    """
+    Edit an existing virtual machine.
+    """
+    try:
+        return service.edit_vm(
+            vm_id, request.name, request.cpu_cores, request.memory_size, request.disk_id
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

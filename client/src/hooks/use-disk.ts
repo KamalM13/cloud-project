@@ -7,6 +7,12 @@ interface AddDisk {
   name: string;
   size: string;
   format: string;
+  dynamic: boolean;
+}
+
+interface EditDisk {
+  name?: string;
+  size?: string;
 }
 
 export default function useDisks() {
@@ -29,7 +35,6 @@ export default function useDisks() {
       return response.data;
     },
     onSuccess: () => {
-      // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ["disks"] });
       toast.success("Disk deleted successfully");
     },
@@ -41,25 +46,52 @@ export default function useDisks() {
       return response.data;
     },
     onSuccess: () => {
-      // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ["disks"] });
       toast.success("Disk created successfully");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error creating disk:", error);
       toast.error(
         "Failed to create disk. Please try again.",
-        error.response.data
+        error.response?.data
       );
     },
   });
 
-  const addDisk = (disk: AddDisk) => {
-    addDiskMutation.mutate(disk);
+  const editDiskMutation = useMutation({
+    mutationFn: async ({
+      diskId,
+      data,
+    }: {
+      diskId: string;
+      data: EditDisk;
+    }) => {
+      const response = await api.patch(`/api/disks/${diskId}`, data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["disks"] });
+      toast.success("Disk updated successfully");
+    },
+    onError: (error: any) => {
+      console.error("Error updating disk:", error);
+      toast.error(
+        "Failed to update disk. Please try again.",
+        error.response?.data
+      );
+    },
+  });
+
+  const addDisk = async (disk: AddDisk) => {
+    await addDiskMutation.mutateAsync(disk);
   };
 
-  const deleteDisk = (diskId: string) => {
-    deleteMutation.mutate(diskId);
+  const editDisk = async (diskId: string, data: EditDisk) => {
+    await editDiskMutation.mutateAsync({ diskId, data });
+  };
+
+  const deleteDisk = async (diskId: string) => {
+    await deleteMutation.mutateAsync(diskId);
   };
 
   if (isDisksError) {
@@ -77,5 +109,6 @@ export default function useDisks() {
     isDisksError,
     deleteDisk,
     addDisk,
+    editDisk,
   };
 }
